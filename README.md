@@ -1,2 +1,2 @@
- memray run --live-port 8100 --main.py
- memray live 8100
+memray run --live-port 8100 --live-remote memory_leak/main.py
+memray live 8100
