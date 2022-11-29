@@ -26,6 +26,7 @@ instruments_list = [
     "BTCUSDT-PERP.BINANCE",
 ]
 
+
 # catalog = ParquetDataCatalog(CATALOG_PATH)
 
 
@@ -54,7 +55,6 @@ for symbol_info in exchange_info.symbols:
             ts_event=100000,
         )
         instruments[symbol_info.symbol] = parsed
-
 
 ###########################################################################################
 # Configure backtest engine
@@ -94,7 +94,6 @@ config = BacktestRunConfig(
     data=data_config,
     venues=venues_config,
 )
-
 
 # Run the backtest!
 

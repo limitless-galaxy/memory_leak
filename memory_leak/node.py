@@ -24,6 +24,8 @@ from nautilus_trader.model.data.tick import QuoteTick
 from nautilus_trader.model.identifiers import InstrumentId, Venue
 
 DATEDIFF = 946684800000000000
+
+
 # 946695600000000000
 
 
@@ -46,14 +48,13 @@ class KDBBatchesBacktestNode(BacktestNode):
     """Node for backtest using kdb database of perpetual futures on binance"""
 
     def _run(
-        self,
-        run_config_id: str,
-        engine_config: BacktestEngineConfig,
-        venue_configs: list[BacktestVenueConfig],
-        data_configs: list[BacktestDataConfig],
-        batch_size_bytes: Optional[int] = None,
+            self,
+            run_config_id: str,
+            engine_config: BacktestEngineConfig,
+            venue_configs: list[BacktestVenueConfig],
+            data_configs: list[BacktestDataConfig],
+            batch_size_bytes: Optional[int] = None,
     ) -> BacktestResult:
-
 
         engine: BacktestEngine = self._create_engine(
             run_config_id=run_config_id,
@@ -155,11 +156,11 @@ class KDBBatchesBacktestNode(BacktestNode):
     def kdb_query_fake(self, date_start: datetime, date_stop: datetime):
         i = 0
         data_list = []
-        step = 3*10e6
+        step = 3 * 10e6
         date_time = date_start.timestamp() * 10e8
         date_time_end = date_stop.timestamp() * 10e8
         while date_time + i < date_time_end:
-            data_list.append([date_time+i, 11, 10, 111, 100])
+            data_list.append([date_time + i, 11, 10, 111, 100])
             i += step
         print(f"Number of entries: {len(data_list)}")
         return data_list
