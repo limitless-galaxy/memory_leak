@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 
 import msgspec
@@ -17,7 +16,6 @@ from nautilus_trader.config import (
     ImportableStrategyConfig,
 )
 from nautilus_trader.model.data.tick import QuoteTick
-from nautilus_trader.persistence.catalog import ParquetDataCatalog
 from node import KDBBatchesBacktestNode
 
 START = datetime(2021, 10, 17)  # 2021.10.17
@@ -25,9 +23,6 @@ END = datetime(2022, 11, 15)
 instruments_list = [
     "BTCUSDT-PERP.BINANCE",
 ]
-
-
-# catalog = ParquetDataCatalog(CATALOG_PATH)
 
 
 def get_market():
@@ -96,7 +91,7 @@ config = BacktestRunConfig(
 )
 
 # Run the backtest!
-
+###########################################################################################
 node = KDBBatchesBacktestNode(configs=[config])
 
 results = node.run()

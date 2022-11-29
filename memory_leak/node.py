@@ -26,9 +26,6 @@ from nautilus_trader.model.identifiers import InstrumentId, Venue
 DATEDIFF = 946684800000000000
 
 
-# 946695600000000000
-
-
 def get_perp_market():
     """
     Get info about instrument for parsing
@@ -43,7 +40,6 @@ def get_perp_market():
     return exchange_info
 
 
-# TODO: move to nautilus_core after testing!
 class KDBBatchesBacktestNode(BacktestNode):
     """Node for backtest using kdb database of perpetual futures on binance"""
 
@@ -77,7 +73,7 @@ class KDBBatchesBacktestNode(BacktestNode):
     def _run_db_streaming(self, run_config_id: str, engine: BacktestEngine, data_configs: list[BacktestDataConfig]):
         exchange_info = get_perp_market()
         for config in data_configs:
-            instrument_id_value = config.instrument_id  # todo
+            instrument_id_value = config.instrument_id
             look_for_instrument = instrument_id_value.split("-")[0]
             symbol = [v for v in exchange_info.symbols if v.symbol == look_for_instrument][0]
             instrument = parse_perpetual_instrument_http(
@@ -110,7 +106,7 @@ class KDBBatchesBacktestNode(BacktestNode):
             del data_quote
             # data_quote.clear()
             # data.clear()
-            engine.clear_data()  # todo ?can change it?
+            engine.clear_data()
             gc.collect()
 
         print("Account report:")
