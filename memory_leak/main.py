@@ -81,8 +81,8 @@ data_config = [
 
 strategies = [
     ImportableStrategyConfig(
-        strategy_path="signal_strategy:SignalStrategy",
-        config_path="signal_strategy:SignalStrategyConfig",
+        strategy_path="memory_leak.signal_strategy:SignalStrategy",
+        config_path="memory_leak.signal_strategy:SignalStrategyConfig",
         config=dict(
             instrument_id="BTCUSDT-PERP.BINANCE",
         ),
