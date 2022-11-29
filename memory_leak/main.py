@@ -16,7 +16,7 @@ from nautilus_trader.config import (
     ImportableStrategyConfig,
 )
 from nautilus_trader.model.data.tick import QuoteTick
-from node import KDBBatchesBacktestNode
+from node import BatchesBacktestNode
 
 START = datetime(2021, 10, 17)  # 2021.10.17
 END = datetime(2022, 11, 15)
@@ -92,6 +92,6 @@ config = BacktestRunConfig(
 
 # Run the backtest!
 ###########################################################################################
-node = KDBBatchesBacktestNode(configs=[config])
+node = BatchesBacktestNode(configs=[config])
 
 results = node.run()
