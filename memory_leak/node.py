@@ -26,9 +26,6 @@ from nautilus_trader.model.identifiers import InstrumentId, Venue
 DATEDIFF = 946684800000000000
 
 
-# 946695600000000000
-
-
 def get_perp_market():
     """
     Get info about instrument for parsing
@@ -43,9 +40,7 @@ def get_perp_market():
     return exchange_info
 
 
-# TODO: move to nautilus_core after testing!
-class KDBBatchesBacktestNode(BacktestNode):
-    """Node for backtest using kdb database of perpetual futures on binance"""
+class BatchesBacktestNode(BacktestNode):
 
     def _run(
             self,
@@ -77,7 +72,7 @@ class KDBBatchesBacktestNode(BacktestNode):
     def _run_db_streaming(self, run_config_id: str, engine: BacktestEngine, data_configs: list[BacktestDataConfig]):
         exchange_info = get_perp_market()
         for config in data_configs:
-            instrument_id_value = config.instrument_id  # todo
+            instrument_id_value = config.instrument_id
             look_for_instrument = instrument_id_value.split("-")[0]
             symbol = [v for v in exchange_info.symbols if v.symbol == look_for_instrument][0]
             instrument = parse_perpetual_instrument_http(
@@ -89,7 +84,7 @@ class KDBBatchesBacktestNode(BacktestNode):
 
         timestep = datetime.timedelta(days=1)
 
-        for data_quote in self.get_data_from_kdb(data_configs, timestep):
+        for data_quote in self.get_data(data_configs, timestep):
             data = {
                 "data": data_quote,
                 "type": QuoteTick,
@@ -110,7 +105,7 @@ class KDBBatchesBacktestNode(BacktestNode):
             del data_quote
             # data_quote.clear()
             # data.clear()
-            engine.clear_data()  # todo ?can change it?
+            engine.clear_data()
             gc.collect()
 
         print("Account report:")
@@ -123,10 +118,7 @@ class KDBBatchesBacktestNode(BacktestNode):
         engine.end_streaming()
         engine.dispose()
 
-    def get_data_from_kdb(self, data_configs: list[BacktestDataConfig], timestep) -> dict:
-        """
-        Get QuoteTicks from kdb database using batches
-        """
+    def get_data(self, data_configs: list[BacktestDataConfig], timestep) -> dict:
         start_times = {config.instrument_id: config.start_time for config in data_configs}
         end_times = {config.instrument_id: config.end_time for config in data_configs}
         start_time = min(start_times.values())
@@ -144,16 +136,13 @@ class KDBBatchesBacktestNode(BacktestNode):
             aggregate_list_quoteticks = []
             for config in data_configs:
                 instrument_id = config.instrument_id.split("-")[0]
-                # for item in kdb_query(token=instrument_id, date_start=current_time, date_stop=till_time):
-                fake_data = self.kdb_query_fake(date_start=current_time, date_stop=till_time)
-                aggregate_list_quoteticks.extend(self.parser_kdb_data_to_quotetick(fake_data, config.instrument_id, 0))
+                fake_data = self.get_fake_ticks(date_start=current_time, date_stop=till_time)
+                aggregate_list_quoteticks.extend(self.parse_fake_data_to_quotetick(fake_data, config.instrument_id, 0))
                 del fake_data
             yield aggregate_list_quoteticks
             current_time = till_time
 
-        # TODO: transform to Nautilus data format depending on data_config.type
-
-    def kdb_query_fake(self, date_start: datetime, date_stop: datetime):
+    def get_fake_ticks(self, date_start: datetime, date_stop: datetime) -> list:
         i = 0
         data_list = []
         step = 3 * 10e6
@@ -165,8 +154,7 @@ class KDBBatchesBacktestNode(BacktestNode):
         print(f"Number of entries: {len(data_list)}")
         return data_list
 
-    def parser_kdb_data_to_quotetick(self, data: list, instrument_id_value: str, drop_ratio: int = 0) -> QuoteTick:
-        """Parser from KDB to QuoteTick"""
+    def parse_fake_data_to_quotetick(self, data: list, instrument_id_value: str, drop_ratio: int = 0) -> QuoteTick:
         for row in data:
             time = row[0]
             if random.randint(0, 99) < drop_ratio:
