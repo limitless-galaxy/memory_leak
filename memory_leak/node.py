@@ -1,4 +1,3 @@
-import datetime
 import gc
 import random
 from typing import Optional
@@ -22,6 +21,8 @@ from nautilus_trader.config import (
 from nautilus_trader.core.datetime import dt_to_unix_nanos
 from nautilus_trader.model.data.tick import QuoteTick
 from nautilus_trader.model.identifiers import InstrumentId, Venue
+from datetime import datetime, timedelta
+
 
 def get_perp_market():
     """
@@ -74,12 +75,12 @@ class BatchesBacktestNode(BacktestNode):
             symbol = [v for v in exchange_info.symbols if v.symbol == look_for_instrument][0]
             instrument = parse_perpetual_instrument_http(
                 symbol_info=symbol,
-                ts_init=dt_to_unix_nanos(datetime.datetime.now()),
-                ts_event=dt_to_unix_nanos(datetime.datetime.now()),
+                ts_init=dt_to_unix_nanos(datetime.now()),
+                ts_event=dt_to_unix_nanos(datetime.now()),
             )
             engine.add_instrument(instrument)
 
-        timestep = datetime.timedelta(days=1)
+        timestep = timedelta(days=1)
 
         for data_quote in self.get_data(data_configs, timestep):
             data = {
