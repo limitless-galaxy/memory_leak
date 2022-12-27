@@ -129,7 +129,7 @@ class BatchesBacktestNode(BacktestNode):
     def get_fake_ticks(self, date_start: datetime, date_stop: datetime) -> list:
         i = 0
         data_list = []
-        step = 3 * 10e6
+        step = 5 * 10e5
         date_time = date_start.timestamp() * 10e8
         date_time_end = date_stop.timestamp() * 10e8
         while date_time + i < date_time_end:
