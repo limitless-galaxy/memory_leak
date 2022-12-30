@@ -7,11 +7,11 @@ readme = "README.md"
 packages = [{include = "memory_leak"}]
 
 [tool.poetry.dependencies]
-python = "3.10.8"
-nautilus-trader = "^1.160.0"
-msgspec = "^0.9.1"
-requests = "^2.28.1"
-memray = "^1.4.1"
+python = "3.11.1"
+nautilus-trader = ">=1.163.0"
+msgspec = ">=0.9.1"
+requests = ">=2.28.1"
+memray = ">=1.4.1"
 
 
 [build-system]
