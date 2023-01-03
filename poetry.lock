@@ -10,6 +10,37 @@ python-versions = "*"
 pycares = ">=4.0.0"
 
 [[package]]
+name = "galaxy-nautilus-core"
+version = "0.1.0"
+description = ""
+category = "main"
+optional = false
+python-versions = ">=3.10.9,<3.12"
+files = []
+develop = false
+
+[package.dependencies]
+httpx = "^0.23.0"
+loguru = "^0.6.0"
+nautilus-trader = "^1.163.0"
+pandas = "^1.5.1"
+pydantic = "^1.10.2"
+pymongo = "^4.3.3"
+pytest = {version = "^7.2.0", extras = ["lazyfixture"]}
+pytest-lazy-fixture = "^0.6.3"
+pytest-mock = "^3.10.0"
+python-binance = "^1.0.16"
+python-dotenv = "^0.21.0"
+qpython = "^2.0.0"
+requests = "^2.28.1"
+
+[package.source]
+type = "git"
+url = "ssh://git@github.com/limitless-galaxy/galaxy_nautilus_core.git"
+reference = "master"
+resolved_reference = "67423973173a205796448149ce43eef405db5112"
+
+[[package]]
 name = "aiohttp"
 version = "3.8.3"
 description = "Async http client/server framework (asyncio)"
@@ -348,7 +379,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pygments"
-version = "2.13.0"
+version = "2.14.0"
 description = "Pygments is a syntax highlighting package written in Python."
 category = "main"
 optional = false
@@ -367,6 +398,17 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "python-dotenv"
+version = "0.21.0"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+cli = ["click (>=5.0)"]
 
 [[package]]
 name = "pytz"
@@ -494,7 +536,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "3.11.1"
-content-hash = "786f6395a2e834468726b24167b61c7c75bed122fd935dfc5f4866a9970eb935"
+content-hash = "6905d6810de49265192ee43a7b461929d3ff3c0caf9d13a3b949211584808ca9"
 
 [metadata.files]
 aiodns = [
@@ -1180,12 +1222,16 @@ pycparser = [
     {file = "pycparser-2.21.tar.gz", hash = "sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206"},
 ]
 pygments = [
-    {file = "Pygments-2.13.0-py3-none-any.whl", hash = "sha256:f643f331ab57ba3c9d89212ee4a2dabc6e94f117cf4eefde99a0574720d14c42"},
-    {file = "Pygments-2.13.0.tar.gz", hash = "sha256:56a8508ae95f98e2b9bdf93a6be5ae3f7d8af858b43e02c5a2ff083726be40c1"},
+    {file = "Pygments-2.14.0-py3-none-any.whl", hash = "sha256:fa7bd7bd2771287c0de303af8bfdfc731f51bd2c6a47ab69d117138893b82717"},
+    {file = "Pygments-2.14.0.tar.gz", hash = "sha256:b3ed06a9e8ac9a9aae5a6f5dbe78a8a58655d17b43b93c078f094ddc476ae297"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
     {file = "python_dateutil-2.8.2-py2.py3-none-any.whl", hash = "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"},
+]
+python-dotenv = [
+    {file = "python-dotenv-0.21.0.tar.gz", hash = "sha256:b77d08274639e3d34145dfa6c7008e66df0f04b7be7a75fd0d5292c191d79045"},
+    {file = "python_dotenv-0.21.0-py3-none-any.whl", hash = "sha256:1684eb44636dd462b66c3ee016599815514527ad99965de77f43e0944634a7e5"},
 ]
 pytz = [
     {file = "pytz-2022.7-py2.py3-none-any.whl", hash = "sha256:93007def75ae22f7cd991c84e02d434876818661f8df9ad5df9e950ff4e52cfd"},
