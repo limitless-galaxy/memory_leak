@@ -12,16 +12,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 # -------------------------------------------------------------------------------------------------
+from datetime import datetime
 import random
 from _decimal import Decimal
 from collections import deque
-from typing import Optional
+from typing import Optional, Union
 
 import pandas as pd
 from galaxy_nautilus_core.gatherings.gathering_simple_limit_order import SimpleLimitGatheringConfig, \
     SimpleLimitExecutionGathering
 from galaxy_nautilus_core.gatherings.gathering_simple_market_order import SimpleMarketGatheringConfig, \
     SimpleMarketExecutionGathering
+from galaxy_nautilus_core.indicators.happy_hours import HappyHours
 from galaxy_nautilus_core.strategy.base_strategy import BaseStrategy, BaseStrategyConfig, BaseStrategyTarget
 from nautilus_trader.config import StrategyConfig
 from nautilus_trader.core.message import Event
@@ -45,6 +47,8 @@ class SignalStrategyConfig(BaseStrategyConfig):
 
     instruments_id: str
 
+class ExtBaseStrategyTarget(BaseStrategyTarget):
+    hh: HappyHours
 
 class SignalStrategy(BaseStrategy):
     """
@@ -78,13 +82,17 @@ class SignalStrategy(BaseStrategy):
         for instrument_id in self.instrument_ids:
             self.subscribe_trade_ticks(instrument_id=instrument_id)
             self.subscribe_quote_ticks(instrument_id=instrument_id)
-            self.targets[instrument_id] = BaseStrategyTarget()
+            self.targets[instrument_id] = ExtBaseStrategyTarget()
             self.targets[instrument_id].orders_history = deque([])
             self.cancel_all_orders(instrument_id)
+            self.targets[instrument_id].hh = HappyHours(7,7)
 
     def on_quote_tick(self, tick: QuoteTick):
         """Actions to be performed when the strategy is running and receives a quote tick."""
         instrument_id = tick.instrument_id
+        current_time = self.ts_to_datetime_rounded(tick.ts_event)
+        if self.counter % 20 == 0:
+            self.targets[instrument_id].hh.update_raw(tick.bid, tick.ask, current_time)
         if instrument_id.symbol.value != "BTCUSDT-PERP":
             return None
         super().on_quote_tick(tick)
@@ -94,34 +102,40 @@ class SignalStrategy(BaseStrategy):
         self.counter += 1
         if self.counter % 10 == 0:
             self.log.info(f"{self.counter}")
-        if self.counter % 500 == 0:
+        if self.counter % 250 == 0:
             self.log.info(f"Save events...", LogColor.YELLOW)
             self.events.to_csv(f"{self.file_name}.csv")
             self.filtered_events.to_csv(f"{self.file_name}_filtered.csv")
             self.filtered_events_ts.to_csv(f"{self.file_name}_filtered_ts.csv")
         if self.counter % 20 == 0:
-            self.publish_signal(name="counter", value=self.counter, ts_event=tick.ts_event)
-            side = OrderSide.SELL if self.counter % 40 == 0 else OrderSide.BUY
-            gathering_config = SimpleLimitGatheringConfig(
-                instrument_id_value=instrument_id.value,
-                target_volume=Decimal(40),
-                price=self.instrument.make_price(bid/2) if side == OrderSide.BUY else self.instrument.make_price(ask*2),
-                order_side=side,
-            )
-            self.targets[instrument_id].gathering = SimpleLimitExecutionGathering(
-                config=gathering_config,
-                execution_config=self.gathering_execution_config,
-            )
-            # order = self.order_factory.limit(
-            #     instrument_id = instrument_id,
-            #     order_side = side,
-            #     quantity = self.instrument.make_qty(0.0025) if side == OrderSide.BUY else self.instrument.make_qty(0.001),
-            #     price = self.instrument.make_price(bid/2) if side == OrderSide.BUY else self.instrument.make_price(ask*2)
-            # )
-            # self.submit_order(order)
-            # self.log.info(f"Send order {order}", LogColor.GREEN)
-            # self.log.info("Send gathering", LogColor.GREEN)
-
+            for i in range(10):
+                # df = pd.DataFrame(columns=["first","second","third"])
+                # for j in range(1500):
+                #     df.loc[j] = [555, 666, 777]
+                #     maxx = df.max()
+                #     minn = df.min()
+                if random.choices([0,1,2,3,4]) == [0]:
+                    self.publish_signal(name="counter", value=self.counter, ts_event=tick.ts_event)
+                    side = OrderSide.SELL if self.counter % 40 == 0 else OrderSide.BUY
+                    # gathering_config = SimpleLimitGatheringConfig(
+                    #     instrument_id_value=instrument_id.value,
+                    #     target_volume=Decimal(40),
+                    #     price=self.instrument.make_price(bid/2) if side == OrderSide.BUY else self.instrument.make_price(ask*2),
+                    #     order_side=side,
+                    # )
+                    # self.targets[instrument_id].gathering = SimpleLimitExecutionGathering(
+                    #     config=gathering_config,
+                    #     execution_config=self.gathering_execution_config,
+                    # )
+                    # self.log.info("Send gathering", LogColor.GREEN)
+                    order = self.order_factory.limit(
+                        instrument_id = instrument_id,
+                        order_side = side,
+                        quantity = self.instrument.make_qty(0.0025) if side == OrderSide.BUY else self.instrument.make_qty(0.001),
+                        price = self.instrument.make_price(bid/2) if side == OrderSide.BUY else self.instrument.make_price(ask*2)
+                    )
+                    self.submit_order(order)
+                    self.log.info(f"Send order {order}", LogColor.GREEN)
 
     def on_trade_tkick(self, tick: TradeTick):
         """Actions to be performed when the strategy is running and receives a trade tick."""
@@ -150,3 +164,7 @@ class SignalStrategy(BaseStrategy):
 
     def on_stop(self):
         pass
+
+    def ts_to_datetime_rounded(self, ts: Union[int, str]):
+        """Convert ts_init/ts_event to datetime format (rounded by seconds)"""
+        return datetime.utcfromtimestamp(int(str(ts)[:10]))
