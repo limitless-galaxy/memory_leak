@@ -18,6 +18,8 @@ from collections import deque
 from typing import Optional
 
 import pandas as pd
+from galaxy_nautilus_core.gatherings.gathering_simple_limit_order import SimpleLimitGatheringConfig, \
+    SimpleLimitExecutionGathering
 from galaxy_nautilus_core.gatherings.gathering_simple_market_order import SimpleMarketGatheringConfig, \
     SimpleMarketExecutionGathering
 from galaxy_nautilus_core.strategy.base_strategy import BaseStrategy, BaseStrategyConfig, BaseStrategyTarget
@@ -90,33 +92,34 @@ class SignalStrategy(BaseStrategy):
         bid = tick.bid
         ts_event = tick.ts_event
         self.counter += 1
-        if self.counter % 500/4 == 0:
+        if self.counter % 10 == 0:
             self.log.info(f"{self.counter}")
-        if self.counter % 20000/4 == 0:
+        if self.counter % 500 == 0:
             self.log.info(f"Save events...", LogColor.YELLOW)
             self.events.to_csv(f"{self.file_name}.csv")
             self.filtered_events.to_csv(f"{self.file_name}_filtered.csv")
             self.filtered_events_ts.to_csv(f"{self.file_name}_filtered_ts.csv")
-        if self.counter % 2000/4 == 0:
+        if self.counter % 20 == 0:
             self.publish_signal(name="counter", value=self.counter, ts_event=tick.ts_event)
-            # gathering_config = SimpleMarketGatheringConfig(
-            #     instrument_id_value=instrument_id.value,
-            #     target_volume=Decimal(30),
-            #     order_side=OrderSide.SELL if self.counter % 100 == 0 else OrderSide.BUY,
-            # )
-            # self.targets[instrument_id].gathering = SimpleMarketExecutionGathering(
-            #     config=gathering_config,
-            #     execution_config=self.gathering_execution_config,
-            # )
-            side = OrderSide.SELL if self.counter % 4000/4 == 0 else OrderSide.BUY
-            order = self.order_factory.limit(
-                instrument_id = instrument_id,
-                order_side = side,
-                quantity = self.instrument.make_qty(0.0025) if side == OrderSide.BUY else self.instrument.make_qty(0.001),
-                price = self.instrument.make_price(bid/2) if side == OrderSide.BUY else self.instrument.make_price(ask*2)
+            side = OrderSide.SELL if self.counter % 40 == 0 else OrderSide.BUY
+            gathering_config = SimpleLimitGatheringConfig(
+                instrument_id_value=instrument_id.value,
+                target_volume=Decimal(40),
+                price=self.instrument.make_price(bid/2) if side == OrderSide.BUY else self.instrument.make_price(ask*2),
+                order_side=side,
             )
-            self.submit_order(order)
-            self.log.info(f"Send order {order}", LogColor.GREEN)
+            self.targets[instrument_id].gathering = SimpleLimitExecutionGathering(
+                config=gathering_config,
+                execution_config=self.gathering_execution_config,
+            )
+            # order = self.order_factory.limit(
+            #     instrument_id = instrument_id,
+            #     order_side = side,
+            #     quantity = self.instrument.make_qty(0.0025) if side == OrderSide.BUY else self.instrument.make_qty(0.001),
+            #     price = self.instrument.make_price(bid/2) if side == OrderSide.BUY else self.instrument.make_price(ask*2)
+            # )
+            # self.submit_order(order)
+            # self.log.info(f"Send order {order}", LogColor.GREEN)
             # self.log.info("Send gathering", LogColor.GREEN)
 
 
@@ -132,6 +135,9 @@ class SignalStrategy(BaseStrategy):
         if isinstance(event, OrderAccepted):
             self.cancel_order(self.cache.orders_open(self.instrument.id.venue)[0])
         if isinstance(event, OrderCanceled):
+            if self.targets[event.instrument_id].gathering:
+                self.targets[event.instrument_id].gathering.data_subscriptions = []
+                self.targets[event.instrument_id].gathering = None
             self.filtered_events = self.events.reset_index().assign(time_lag=self.events.
                                                                     reset_index(names=["index"]).
                                                                     groupby('client_order_id', group_keys=False).
